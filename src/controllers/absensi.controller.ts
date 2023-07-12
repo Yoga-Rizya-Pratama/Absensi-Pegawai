@@ -1,5 +1,5 @@
 import {Entity, repository} from '@loopback/repository';
-import {HttpErrors, get, post, requestBody, response} from '@loopback/rest';
+import {HttpErrors, get, param, patch, post, requestBody, response} from '@loopback/rest';
 import {Absensi, AbsensiDto, IzinCuti, IzinCutiDto} from '../models';
 import {AbsensiRepository, IzinCutiRepository, PegawaiRepository} from '../repositories';
 
@@ -134,6 +134,46 @@ export class AbsensiController {
   })
   async getCuti() {
     return this.izinCutiRepository.find({where: {tipe: 'cuti'}})
+  }
+
+  @patch('/approve/{id_izin}/izin')
+  async approveIzin(@param.path.string('id_izin') id: number) {
+    const izin = await this.izinCutiRepository.findOne({where: {id: id, tipe: 'izin'}});
+    if (!izin) {
+      throw HttpErrors.NotFound('izin not found');
+    }
+    izin.approval = true;
+    try {
+      const saveData = await this.izinCutiRepository.update(izin)
+      const pegawai = await this.pegawaiRepository.findOne({where: {nomor_pegawai: izin.nomor_pegawai}});
+
+      return {
+        msg: `izin pegawai ${pegawai?.nama_pegawai} dengan nomor pegawai ${pegawai?.nomor_pegawai} berhasil disetujui`
+      }
+
+    } catch (error) {
+      throw HttpErrors(error)
+    }
+  }
+
+  @patch('/approve/{id_cuti}/cuti')
+  async approveCuti(@param.path.string('id_cuti') id: number) {
+    const cuti = await this.izinCutiRepository.findOne({where: {id: id, tipe: 'cuti'}});
+    if (!cuti) {
+      throw HttpErrors.NotFound('cuti not found');
+    }
+    cuti.approval = true;
+    try {
+      const saveData = await this.izinCutiRepository.update(cuti)
+      const pegawai = await this.pegawaiRepository.findOne({where: {nomor_pegawai: cuti.nomor_pegawai}});
+
+      return {
+        msg: `cuti pegawai ${pegawai?.nama_pegawai} dengan nomor pegawai ${pegawai?.nomor_pegawai} berhasil disetujui`
+      }
+
+    } catch (error) {
+      throw HttpErrors(error)
+    }
   }
 
 
