@@ -1,6 +1,6 @@
 import {Entity, repository} from '@loopback/repository';
 import {HttpErrors, post, requestBody, response} from '@loopback/rest';
-import {Absensi, AbsensiDto} from '../models';
+import {Absensi, AbsensiDto, IzinCuti, IzinCutiDto} from '../models';
 import {AbsensiRepository, IzinCutiRepository, PegawaiRepository} from '../repositories';
 
 
@@ -68,5 +68,46 @@ export class AbsensiController {
       data: saveData
     };
   }
+
+  @post('/absen/izin')
+  @response(201, {
+    description: 'Data Pegawai Izin',
+    content: {'application/json': {schema: IzinCuti}},
+  })
+  async createIzin(@requestBody() izin: IzinCutiDto) {
+    const approval: boolean = false;
+    const tipe: string = 'izin'
+
+    const data: IzinCuti & Entity = new IzinCuti();
+    data.nomor_pegawai = izin.nomor_pegawai;
+    data.nama_pegawai = izin.nama_pegawai;
+    data.tanggal = izin.tanggal;
+    data.tipe = tipe;
+    data.alasan = izin.alasan;
+    data.approval = approval;
+
+    return this.izinCutiRepository.create(data);
+  }
+
+  @post('/absen/cuti')
+  @response(201, {
+    description: 'Cuti Pegawai',
+    content: {'application/json': {schema: IzinCuti}},
+  })
+  async createCuti(@requestBody() cuti: IzinCutiDto) {
+    const approval: boolean = false;
+    const tipe: string = 'cuti'
+
+    const data: IzinCuti & Entity = new IzinCuti();
+    data.nomor_pegawai = cuti.nomor_pegawai;
+    data.nama_pegawai = cuti.nama_pegawai;
+    data.tanggal = cuti.tanggal;
+    data.tipe = tipe;
+    data.alasan = cuti.alasan;
+    data.approval = approval;
+
+    return this.izinCutiRepository.create(data);
+  }
+
 
 }
