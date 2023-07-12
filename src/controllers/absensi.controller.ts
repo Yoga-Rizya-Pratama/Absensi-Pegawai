@@ -219,5 +219,212 @@ export class AbsensiController {
     return {msg: 'Cuti berhasil di hapus'}
   }
 
+  @get('/absen/laporan')
+  @response(200, {
+    description: 'Laporan Kehadiran Pegawai',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              nama_pegawai: {type: 'string'},
+              nomor_pegawai: {type: 'number'},
+              jumlah_telat: {type: 'number'},
+              jumlah_izin: {type: 'number'},
+              jumlah_cuti: {type: 'number'},
+              jumlah_izin_sebulan: {
+                type: 'object',
+                properties: {
+                  bulan: {type: 'string'},
+                  izin_disetujui: {type: 'number'},
+                  izin_tidak_disetujui: {type: 'number'},
+                },
+              },
+              jumlah_cuti_sebulan: {
+                type: 'object',
+                properties: {
+                  bulan: {type: 'string'},
+                  cuti_disetujui: {type: 'number'},
+                  cuti_tidak_disetujui: {type: 'number'},
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  async getLaporan() {
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().substring(0, 10);
+    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().substring(0, 10);
 
+
+    const findPegawai = await this.pegawaiRepository.find();
+
+    const laporan = [];
+
+    for (const pegawai of findPegawai) {
+      const countTelat = await this.absensiRepository.find({where: {nomor_pegawai: pegawai.nomor_pegawai, telat: true}});
+      const countIzin = await this.izinCutiRepository.find({where: {nomor_pegawai: pegawai.nomor_pegawai, tipe: 'izin'}});
+      const countCuti = await this.izinCutiRepository.find({where: {nomor_pegawai: pegawai.nomor_pegawai, tipe: 'cuti'}});
+      const countIzinDisetujui = await this.izinCutiRepository.count({
+        nomor_pegawai: pegawai.nomor_pegawai,
+        tanggal: {
+          between: [firstDayOfMonth, lastDayOfMonth],
+        },
+        tipe: 'izin',
+        approval: true,
+      });
+      const countIzinTidakDisetujui = await this.izinCutiRepository.count({
+        nomor_pegawai: pegawai.nomor_pegawai,
+        tanggal: {
+          between: [firstDayOfMonth, lastDayOfMonth],
+        },
+        tipe: 'izin',
+        approval: false,
+      });
+      const countCutiDisetujui = await this.izinCutiRepository.count({
+        nomor_pegawai: pegawai.nomor_pegawai,
+        tanggal: {
+          between: [firstDayOfMonth, lastDayOfMonth],
+        },
+        tipe: 'cuti',
+        approval: true,
+      });
+      const countCutiTidakDisetujui = await this.izinCutiRepository.count({
+        nomor_pegawai: pegawai.nomor_pegawai,
+        tanggal: {
+          between: [firstDayOfMonth, lastDayOfMonth],
+        },
+        tipe: 'cuti',
+        approval: false,
+      });
+
+      laporan.push({
+        nama_pegawai: pegawai.nama_pegawai,
+        nomor_pegawai: pegawai.nomor_pegawai,
+        jumlah_telat: countTelat.length,
+        jumlah_izin: countIzin.length,
+        jumlah_cuti: countCuti.length,
+        jumlah_izin_sebulan: {
+          bulan: now.toLocaleString('default', {month: 'long'}),
+          izin_disetujui: countIzinDisetujui.count,
+          izin_tidak_disetujui: countIzinTidakDisetujui.count
+        },
+        jumlah_cuti_sebulan: {
+          bulan: now.toLocaleString('default', {month: 'long'}),
+          cuti_disetujui: countCutiDisetujui.count,
+          izin_tidak_disetujui: countCutiTidakDisetujui.count
+        }
+      });
+    }
+
+    return laporan;
+  }
+
+  @get('/absen/{no_pegawai}/laporan')
+  @response(200, {
+    description: 'Laporan Kehadiran Pegawai',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              nama_pegawai: {type: 'string'},
+              nomor_pegawai: {type: 'number'},
+              jumlah_telat: {type: 'number'},
+              jumlah_izin: {type: 'number'},
+              jumlah_cuti: {type: 'number'},
+              jumlah_izin_sebulan: {
+                type: 'object',
+                properties: {
+                  bulan: {type: 'string'},
+                  izin_disetujui: {type: 'number'},
+                  izin_tidak_disetujui: {type: 'number'},
+                },
+              },
+              jumlah_cuti_sebulan: {
+                type: 'object',
+                properties: {
+                  bulan: {type: 'string'},
+                  cuti_disetujui: {type: 'number'},
+                  cuti_tidak_disetujui: {type: 'number'},
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  async getLaporanById(@param.path.string('no_pegawai') nomor_pegawai: number) {
+    const pegawai = await this.pegawaiRepository.findOne({where: {nomor_pegawai: nomor_pegawai}});
+
+    if (!pegawai) throw HttpErrors.NotFound('Pegawai not found')
+
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().substring(0, 10);
+    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().substring(0, 10);
+
+    const countTelat = await this.absensiRepository.find({where: {nomor_pegawai: nomor_pegawai, telat: true}});
+    const countIzin = await this.izinCutiRepository.find({where: {nomor_pegawai: nomor_pegawai, tipe: 'izin'}});
+    const countCuti = await this.izinCutiRepository.find({where: {nomor_pegawai: nomor_pegawai, tipe: 'cuti'}});
+    const countIzinDisetujui = await this.izinCutiRepository.count({
+      nomor_pegawai: nomor_pegawai,
+      tanggal: {
+        between: [firstDayOfMonth, lastDayOfMonth],
+      },
+      tipe: 'izin',
+      approval: true,
+    });
+    const countIzinTidakDisetujui = await this.izinCutiRepository.count({
+      nomor_pegawai: nomor_pegawai,
+      tanggal: {
+        between: [firstDayOfMonth, lastDayOfMonth],
+      },
+      tipe: 'izin',
+      approval: false,
+    });
+    const countCutiDisetujui = await this.izinCutiRepository.count({
+      nomor_pegawai: nomor_pegawai,
+      tanggal: {
+        between: [firstDayOfMonth, lastDayOfMonth],
+      },
+      tipe: 'cuti',
+      approval: true,
+    });
+    const countCutiTidakDisetujui = await this.izinCutiRepository.count({
+      nomor_pegawai: nomor_pegawai,
+      tanggal: {
+        between: [firstDayOfMonth, lastDayOfMonth],
+      },
+      tipe: 'cuti',
+      approval: false,
+    });
+
+    const laporan = {
+      nama_pegawai: pegawai?.nama_pegawai,
+      nomor_pegawai: pegawai?.nomor_pegawai,
+      jumlah_telat: countTelat.length,
+      jumlah_izin: countIzin.length,
+      jumlah_cuti: countCuti.length,
+      jumlah_izin_sebulan: {
+        bulan: now.toLocaleString('default', {month: 'long'}),
+        izin_disetujui: countIzinDisetujui.count,
+        izin_tidak_disetujui: countIzinTidakDisetujui.count
+      },
+      jumlah_cuti_sebulan: {
+        bulan: now.toLocaleString('default', {month: 'long'}),
+        cuti_disetujui: countCutiDisetujui.count,
+        izin_tidak_disetujui: countCutiTidakDisetujui.count
+      }
+    };
+
+    return laporan
+  }
 }
