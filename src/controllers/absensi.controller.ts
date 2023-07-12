@@ -1,5 +1,5 @@
 import {Entity, repository} from '@loopback/repository';
-import {HttpErrors, get, param, patch, post, requestBody, response} from '@loopback/rest';
+import {HttpErrors, del, get, param, patch, post, requestBody, response} from '@loopback/rest';
 import {Absensi, AbsensiDto, IzinCuti, IzinCutiDto} from '../models';
 import {AbsensiRepository, IzinCutiRepository, PegawaiRepository} from '../repositories';
 
@@ -174,6 +174,49 @@ export class AbsensiController {
     } catch (error) {
       throw HttpErrors(error)
     }
+  }
+
+  @del('/absen/{id}/hadir')
+  async deleteKehadiran(@param.path.string('id') id: number) {
+    const findKehadiran = await this.absensiRepository.findById(id);
+
+    if (!findKehadiran) throw HttpErrors.NotFound('Kehadiran Tidak Ditemukan')
+
+    const del = await this.absensiRepository.deleteById(id);
+
+    return {msg: 'kehadiran berhasil di hapus'}
+  }
+
+  @del('/absen/{id}/izin')
+  async deleteIzin(@param.path.string('id') id: number) {
+    const findIzin = await this.izinCutiRepository.findOne({
+      where: {
+        id: id,
+        tipe: 'izin'
+      }
+    });
+
+    if (!findIzin) throw HttpErrors.NotFound('Izin Tidak Ditemukan')
+
+    const del = await this.izinCutiRepository.deleteById(id);
+
+    return {msg: 'Izin berhasil di hapus'}
+  }
+
+  @del('/absen/{id}/cuti')
+  async deleteCuti(@param.path.string('id') id: number) {
+    const findIzin = await this.izinCutiRepository.findOne({
+      where: {
+        id: id,
+        tipe: 'cuti'
+      }
+    });
+
+    if (!findIzin) throw HttpErrors.NotFound('Cuti Tidak Ditemukan')
+
+    const del = await this.izinCutiRepository.deleteById(id);
+
+    return {msg: 'Cuti berhasil di hapus'}
   }
 
 
