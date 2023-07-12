@@ -1,5 +1,5 @@
 import {Entity, repository} from '@loopback/repository';
-import {HttpErrors, post, requestBody, response} from '@loopback/rest';
+import {HttpErrors, get, post, requestBody, response} from '@loopback/rest';
 import {Absensi, AbsensiDto, IzinCuti, IzinCutiDto} from '../models';
 import {AbsensiRepository, IzinCutiRepository, PegawaiRepository} from '../repositories';
 
@@ -107,6 +107,33 @@ export class AbsensiController {
     data.approval = approval;
 
     return this.izinCutiRepository.create(data);
+  }
+
+  @get('/absen/hadir')
+  @response(200, {
+    description: 'Izin Pegawai',
+    content: {'application/json': {schema: IzinCuti}},
+  })
+  async getKehadiran() {
+    return this.absensiRepository.find()
+  }
+
+  @get('/absen/izin')
+  @response(200, {
+    description: 'Data Pegawai Izin',
+    content: {'application/json': {schema: IzinCuti}},
+  })
+  async getIzin() {
+    return this.izinCutiRepository.find({where: {tipe: 'izin'}})
+  }
+
+  @get('/absen/cuti')
+  @response(200, {
+    description: 'Data Pegawai Cuti',
+    content: {'application/json': {schema: IzinCuti}},
+  })
+  async getCuti() {
+    return this.izinCutiRepository.find({where: {tipe: 'cuti'}})
   }
 
 
