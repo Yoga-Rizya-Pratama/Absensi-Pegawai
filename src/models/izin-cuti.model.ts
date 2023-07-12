@@ -1,7 +1,7 @@
 import {Entity, model, property} from '@loopback/repository';
 
 @model()
-export class Absensi extends Entity {
+export class IzinCuti extends Entity {
   @property({
     type: 'string',
     id: true,
@@ -10,16 +10,16 @@ export class Absensi extends Entity {
   id?: number;
 
   @property({
-    type: 'number',
-    required: true,
-  })
-  nomor_pegawai: number;
-
-  @property({
     type: 'string',
     required: true,
   })
   nama_pegawai: string;
+
+  @property({
+    type: 'number',
+    required: true,
+  })
+  nomor_pegawai: number;
 
   @property({
     type: 'date',
@@ -31,20 +31,19 @@ export class Absensi extends Entity {
     type: 'string',
     required: true,
   })
-  waktu: string;
+  tipe: string;
 
   @property({
     type: 'string',
     required: true,
   })
-  tipe: string;
+  alasan: string;
 
   @property({
     type: 'boolean',
     required: true,
-    default: false,
   })
-  telat: boolean;
+  approval: boolean;
 
   @property({
     type: 'date',
@@ -58,13 +57,13 @@ export class Absensi extends Entity {
   })
   updatedAt?: Date;
 
-  constructor(data?: Partial<Absensi>) {
+  constructor(data?: Partial<IzinCuti>) {
     super(data);
   }
 }
 
-export interface AbsensiRelations {
+export interface IzinCutiRelations {
   // describe navigational properties here
 }
 
-export type AbsensiWithRelations = Absensi & AbsensiRelations;
+export type IzinCutiWithRelations = IzinCuti & IzinCutiRelations;

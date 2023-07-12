@@ -14,13 +14,6 @@ export class AbsensiDto extends Entity {
   })
   nomor_pegawai: number;
 
-  @property({
-    type: 'date',
-    required: true,
-  })
-  tanggal: string;
-
-
   constructor(data?: Partial<AbsensiDto>) {
     super(data);
   }
