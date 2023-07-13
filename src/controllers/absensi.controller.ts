@@ -317,7 +317,7 @@ export class AbsensiController {
         jumlah_cuti_sebulan: {
           bulan: now.toLocaleString('default', {month: 'long'}),
           cuti_disetujui: countCutiDisetujui.count,
-          izin_tidak_disetujui: countCutiTidakDisetujui.count
+          cuti_tidak_disetujui: countCutiTidakDisetujui.count
         }
       });
     }
@@ -425,7 +425,7 @@ export class AbsensiController {
       jumlah_cuti_sebulan: {
         bulan: now.toLocaleString('default', {month: 'long'}),
         cuti_disetujui: countCutiDisetujui.count,
-        izin_tidak_disetujui: countCutiTidakDisetujui.count
+        cuti_tidak_disetujui: countCutiTidakDisetujui.count
       }
     };
 
