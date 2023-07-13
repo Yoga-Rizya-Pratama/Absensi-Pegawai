@@ -1,4 +1,17 @@
-# absensi
+# absensi pegawai
+Technology
+1. Loopback 4
+2. MongoDB
+
+Deployed Server Url : 
+```sh
+https://forest-tremendous-ox.glitch.me/
+```
+
+to access the API documentation go to this URL: 
+```sh 
+GET /api-docs
+```
 
 This application is generated using [LoopBack 4 CLI](https://loopback.io/doc/en/lb4/Command-line-interface.html) with the
 [initial project layout](https://loopback.io/doc/en/lb4/Loopback-application-layout.html).
