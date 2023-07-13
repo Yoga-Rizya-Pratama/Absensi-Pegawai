@@ -3,9 +3,9 @@ Technology
 1. Loopback 4
 2. MongoDB
 
-Deployed Server Url : 
+You can test the API on the following deployed servers :
 ```sh
-https://forest-tremendous-ox.glitch.me/
+https://pleasant-flint-valley.glitch.me/
 ```
 
 to access the API documentation go to this URL: 
