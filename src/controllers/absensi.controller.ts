@@ -33,15 +33,13 @@ export class AbsensiController {
   async createAbsensi(@requestBody() absensi: AbsensiDto) {
     const now: Date = new Date();
 
+    // Ubah zona waktu ke Indonesia (GMT+7)
+    const waktuIndonesia = new Date(now.toLocaleString('en-US', {timeZone: 'Asia/Jakarta'}));
+
     const findPegawai = await this.pegawaiRepository.findOne({where: {nomor_pegawai: absensi.nomor_pegawai}})
-
-    const findKehadiran = await this.absensiRepository.findOne({where: {nomor_pegawai: absensi.nomor_pegawai, tanggal: now.toISOString().substring(0, 10)}})
-
+    const findKehadiran = await this.absensiRepository.findOne({where: {nomor_pegawai: absensi.nomor_pegawai, tanggal: waktuIndonesia.toISOString().substring(0, 10)}})
     if (!findPegawai) throw HttpErrors.NotFound('Nomor Pegawai Tidak Ditemukan Harap Mendaftarkan Pegawai')
     if (findKehadiran) throw HttpErrors.BadRequest('Anda sudah hadir hari ini')
-
-    // Tetapkan batas waktu terlambat pada jam 12:00 dan tanggal sesuai dengan waktu saat ini
-    const batasWaktuTerlambat: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
 
     const tipe: string = 'hadir'
 
@@ -49,17 +47,17 @@ export class AbsensiController {
     data.nomor_pegawai = absensi.nomor_pegawai;
     data.nama_pegawai = absensi.nama_pegawai;
     data.tipe = tipe;
-    data.tanggal = now.toISOString().substring(0, 10); // Menggunakan tanggal saat ini
-    data.waktu = now.toISOString(); // Menggunakan waktu saat ini
+    data.tanggal = waktuIndonesia.toISOString().substring(0, 10); // Menggunakan tanggal saat ini
+    data.waktu = waktuIndonesia.getHours().toString() + ':' + waktuIndonesia.getMinutes(); // Menggunakan waktu saat ini
 
     // Periksa apakah waktu absensi melebihi batas waktu terlambat
-    const waktuAbsensi: Date = new Date(data.waktu);
-
-    if (waktuAbsensi > batasWaktuTerlambat) {
+    const waktuAbsensi: Date = waktuIndonesia;
+    if (waktuAbsensi.getHours() > 12 || (waktuAbsensi.getHours() === 12 && waktuAbsensi.getMinutes() > 0)) {
       data.telat = true;
     } else {
       data.telat = false;
     }
+
     const saveData = await this.absensiRepository.create(data)
 
     return {
@@ -257,10 +255,12 @@ export class AbsensiController {
     },
   })
   async getLaporan() {
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().substring(0, 10);
-    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().substring(0, 10);
+    const now: Date = new Date();
+    // Ubah zona waktu ke Indonesia (GMT+7)
+    const waktuIndonesia = new Date(now.toLocaleString('en-US', {timeZone: 'Asia/Jakarta'}));
 
+    const firstDayOfMonth = new Date(waktuIndonesia.getFullYear(), waktuIndonesia.getMonth(), 1).toISOString().substring(0, 10);
+    const lastDayOfMonth = new Date(waktuIndonesia.getFullYear(), waktuIndonesia.getMonth() + 1, 0).toISOString().substring(0, 10);
 
     const findPegawai = await this.pegawaiRepository.find();
 
@@ -367,9 +367,13 @@ export class AbsensiController {
 
     if (!pegawai) throw HttpErrors.NotFound('Pegawai not found')
 
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().substring(0, 10);
-    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().substring(0, 10);
+    const now: Date = new Date();
+    // Ubah zona waktu ke Indonesia (GMT+7)
+    const waktuIndonesia = new Date(now.toLocaleString('en-US', {timeZone: 'Asia/Jakarta'}));
+
+    const firstDayOfMonth = new Date(waktuIndonesia.getFullYear(), waktuIndonesia.getMonth(), 1).toISOString().substring(0, 10);
+    const lastDayOfMonth = new Date(waktuIndonesia.getFullYear(), waktuIndonesia.getMonth() + 1, 0).toISOString().substring(0, 10);
+
 
     const countTelat = await this.absensiRepository.find({where: {nomor_pegawai: nomor_pegawai, telat: true}});
     const countIzin = await this.izinCutiRepository.find({where: {nomor_pegawai: nomor_pegawai, tipe: 'izin'}});
