@@ -73,6 +73,9 @@ export class AbsensiController {
     content: {'application/json': {schema: IzinCuti}},
   })
   async createIzin(@requestBody() izin: IzinCutiDto) {
+    const findPegawai = await this.pegawaiRepository.findOne({where: {nomor_pegawai: izin.nomor_pegawai}})
+    if (!findPegawai) throw HttpErrors.NotFound('Nomor Pegawai Tidak Ditemukan Harap Mendaftarkan Pegawai')
+
     const approval: boolean = false;
     const tipe: string = 'izin'
 
@@ -93,6 +96,8 @@ export class AbsensiController {
     content: {'application/json': {schema: IzinCuti}},
   })
   async createCuti(@requestBody() cuti: IzinCutiDto) {
+    const findPegawai = await this.pegawaiRepository.findOne({where: {nomor_pegawai: cuti.nomor_pegawai}})
+    if (!findPegawai) throw HttpErrors.NotFound('Nomor Pegawai Tidak Ditemukan Harap Mendaftarkan Pegawai')
     const approval: boolean = false;
     const tipe: string = 'cuti'
 
