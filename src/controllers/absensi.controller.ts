@@ -272,6 +272,7 @@ export class AbsensiController {
     const laporan = [];
 
     for (const pegawai of findPegawai) {
+      const countHadir = await this.absensiRepository.find({where: {nomor_pegawai: pegawai.nomor_pegawai}});
       const countTelat = await this.absensiRepository.find({where: {nomor_pegawai: pegawai.nomor_pegawai, telat: true}});
       const countIzin = await this.izinCutiRepository.find({where: {nomor_pegawai: pegawai.nomor_pegawai, tipe: 'izin'}});
       const countCuti = await this.izinCutiRepository.find({where: {nomor_pegawai: pegawai.nomor_pegawai, tipe: 'cuti'}});
@@ -311,6 +312,7 @@ export class AbsensiController {
       laporan.push({
         nama_pegawai: pegawai.nama_pegawai,
         nomor_pegawai: pegawai.nomor_pegawai,
+        jumlah_hadir: countHadir.length,
         jumlah_telat: countTelat.length,
         jumlah_izin: countIzin.length,
         jumlah_cuti: countCuti.length,
@@ -379,7 +381,7 @@ export class AbsensiController {
     const firstDayOfMonth = new Date(waktuIndonesia.getFullYear(), waktuIndonesia.getMonth(), 1).toISOString().substring(0, 10);
     const lastDayOfMonth = new Date(waktuIndonesia.getFullYear(), waktuIndonesia.getMonth() + 1, 0).toISOString().substring(0, 10);
 
-
+    const countHadir = await this.absensiRepository.find({where: {nomor_pegawai: nomor_pegawai}});
     const countTelat = await this.absensiRepository.find({where: {nomor_pegawai: nomor_pegawai, telat: true}});
     const countIzin = await this.izinCutiRepository.find({where: {nomor_pegawai: nomor_pegawai, tipe: 'izin'}});
     const countCuti = await this.izinCutiRepository.find({where: {nomor_pegawai: nomor_pegawai, tipe: 'cuti'}});
@@ -419,6 +421,7 @@ export class AbsensiController {
     const laporan = {
       nama_pegawai: pegawai?.nama_pegawai,
       nomor_pegawai: pegawai?.nomor_pegawai,
+      jumlah_hadir: countHadir.length,
       jumlah_telat: countTelat.length,
       jumlah_izin: countIzin.length,
       jumlah_cuti: countCuti.length,
